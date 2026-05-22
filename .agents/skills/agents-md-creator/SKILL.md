@@ -1,20 +1,19 @@
 ---
 name: agents-md-creator
-description: >
-  Create and refactor AGENTS.md files following progressive disclosure principles.
-  Use this skill whenever the user mentions AGENTS.md, CLAUDE.md, agent configuration, AI coding agent setup, agent instructions, or wants to set up rules for how AI agents should behave in their repository.
-  Also use when the user wants to reduce the size of their AGENTS.md, split it into smaller files, organize agent instructions, apply progressive disclosure, or fix a bloated AGENTS.md.
-  This skill handles both creating a minimal AGENTS.md from scratch and refactoring an existing one that has grown too large.
-  Pay attention to instructions about instruction budget, one-liner project descriptions, and moving domain-specific rules to separate reference files.
+description: Create, refactor and optimize AGENTS.md files following progressive disclosure principles. This skill handles both creating a minimal AGENTS.md from scratch and refactoring an existing one that has grown too large. 
 license: Apache-2.0
 metadata:
   author: rainan16
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # agents-md-creator
 
-A skill for creating and refactoring `AGENTS.md` files using progressive disclosure principles, based on the methodology from [A Complete Guide To AGENTS.md](https://www.aihero.dev/a-complete-guide-to-agents-md).
+A skill for creating and refactoring `AGENTS.md` files using progressive disclosure principles.
+
+## When to use this Skill
+
+Use this skill whenever the user mentions AGENTS.md, CLAUDE.md, agent configuration, AI coding agent setup, agent instructions, or wants to set up rules for how AI agents should behave in their repository. Also use when the user wants to reduce the size of their AGENTS.md, split it into smaller files, organize agent instructions, apply progressive disclosure, or fix a bloated AGENTS.md. Pay attention to instructions about instruction budget, one-liner project descriptions, and moving domain-specific rules to separate reference files.
 
 ## Core Principles
 
