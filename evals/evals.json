@@ -1,0 +1,488 @@
+{
+  "skill_name": "agents-md-creator",
+  "iteration": 1,
+  "evals": [
+    {
+      "id": 0,
+      "name": "create-new-agents-md",
+      "prompt": "I just started a new project \u2014 a CLI tool for converting markdown to PDF, written in Go. I use Go modules for dependencies and Make for building. Can you create an AGENTS.md for it?",
+      "assertions": [
+        {
+          "name": "has-one-liner-description",
+          "description": "AGENTS.md contains a one-sentence project description",
+          "expected": true
+        },
+        {
+          "name": "specifies-package-manager",
+          "description": "AGENTS.md specifies Go modules as the dependency manager",
+          "expected": true
+        },
+        {
+          "name": "specifies-build-command",
+          "description": "AGENTS.md includes the Make build command",
+          "expected": true
+        },
+        {
+          "name": "has-reference-links",
+          "description": "AGENTS.md links to at least one docs/ reference file",
+          "expected": true
+        },
+        {
+          "name": "under-20-lines",
+          "description": "Root AGENTS.md is under 20 lines (minimal)",
+          "expected": true
+        },
+        {
+          "name": "no-hardcoded-file-paths",
+          "description": "AGENTS.md does not contain hardcoded file paths like src/ or internal/",
+          "expected": true
+        }
+      ],
+      "with_skill": {
+        "outputs": {
+          "summary.md": "# Summary\n\n## What was created\n\nFor a new Go CLI project (markdown-to-PDF converter using Go modules and Make), the following files were created following the **agents-md-creator** skill's progressive disclosure principles:\n\n### Root `AGENTS.md`\nA minimal, essential-only file containing:\n- One-sentence project description\n- Build, test, and lint commands\n- Package manager (Go modules)\n- Links to domain-specific reference files under `docs/`\n\n### Reference files under `docs/`\n\n| File | Purpose |\n|---|---|\n| `docs/GOLANG.md` | Go conventions \u2014 project structure, naming, error handling, imports, concurrency patterns |\n| `docs/BUILD.md` | Build system \u2014 Make targets, Go modules dependency management, cross-compilation |\n| `docs/TESTING.md` | Testing patterns \u2014 table-driven tests, fixtures in `testdata/`, golden files, coverage |\n| `docs/ARCHITECTURE.md` | Architecture overview \u2014 three-stage pipeline (parse \u2192 render \u2192 generate), package map, data flow |\n\n## Why this structure\n\nFollowing the skill's progressive disclosure methodology:\n- The root `AGENTS.md` stays under 15 lines so every token is essential to every task\n- Domain rules (Go idioms, build details, testing patterns, architecture) are in separate files loaded only when the agent needs that domain\n- No hardcoded file paths \u2014 packages are described by their responsibility\n- The one-liner anchors the agent's understanding of the project\n- The doc structure mirrors the skill's recommended layout for new projects\n",
+          "AGENTS.md": "# Project\nThis is a Go CLI tool that converts Markdown files to PDF documents.\n\n## Commands\n- Build: make build\n- Test: make test\n- Lint: make lint\n- Package manager: Go modules\n\n## Reference\n- Go conventions: docs/GOLANG.md\n- Build system: docs/BUILD.md\n- Testing patterns: docs/TESTING.md\n- Architecture: docs/ARCHITECTURE.md\n",
+          "docs/GOLANG.md": "# Go Conventions\n\n## Project Structure\n- `cmd/` \u2014 entry points (e.g., `cmd/md2pdf/main.go`)\n- `internal/` \u2014 private packages not importable outside the module\n- `pkg/` \u2014 reusable public packages\n- Top-level `main.go` only for single-package projects; use `cmd/` otherwise\n\n## Naming\n- Use camelCase for unexported identifiers, PascalCase for exported ones\n- Single-letter receiver names are idiomatic (`r *Reader`, `w *Writer`)\n- Avoid stutter: `pdf.NewGenerator()` not `pdf.NewPdfGenerator()`\n\n## Error Handling\n- Return errors, don't panic (except in `main` or test setup)\n- Wrap errors with context: `fmt.Errorf(\"reading input: %w\", err)`\n- Use `errors.Is()` and `errors.As()` for sentinel and type errors\n\n## Imports\n- Group: stdlib \u2192 external \u2192 internal (with blank line separators)\n- Use named imports only when the package name conflicts\n\n## Concurrency\n- Use `sync.WaitGroup` or errgroup for fan-out work\n- Cancel via `context.Context` \u2014 thread it through the call chain\n- Document goroutine lifetimes when they outlive the creating function\n\nFor build details, see BUILD.md. For testing, see TESTING.md.\n",
+          "docs/ARCHITECTURE.md": "# Architecture\n\n## Overview\n\nThe tool converts Markdown to PDF through a three-stage pipeline:\n1. **Parse** \u2014 Read and parse Markdown (using `github.com/yuin/goldmark` or similar)\n2. **Render** \u2014 Convert parsed AST to an intermediate layout (styled blocks, tables, code blocks)\n3. **Generate** \u2014 Produce the final PDF from the layout (using `github.com/jung-kurt/gofpdf` or similar)\n\n## CLI Layer\n- `cmd/md2pdf/main.go` \u2014 flag parsing (input file, output path, options)\n- Uses `github.com/spf13/cobra` if the interface grows beyond a few flags\n\n## Package Responsibilities\n\n| Package | Responsibility |\n|---|---|\n| `internal/parser` | Markdown parsing and AST construction |\n| `internal/renderer` | AST \u2192 styled layout (fonts, margins, page breaks) |\n| `internal/generator` | Layout \u2192 PDF bytes |\n| `internal/config` | CLI flags, defaults, and configuration merging |\n| `internal/types` | Shared types (AST nodes, style properties) used across packages |\n\n## Data Flow\n\n```\nMarkdown file \u2192 parser.Parse() \u2192 AST \u2192 renderer.Render() \u2192 Layout \u2192 generator.Generate() \u2192 PDF bytes \u2192 file\n```\n\n## Key Design Decisions\n- Pipeline is explicit and sequential \u2014 no goroutines needed for the hot path\n- Each stage is independently testable by passing its output type directly\n- Style configuration (fonts, colors, margins) lives in `internal/config` as a struct, not in global state\n",
+          "docs/TESTING.md": "# Testing Patterns\n\n## Running Tests\n- All tests: `make test` or `go test ./...`\n- Single package: `go test ./internal/renderer/`\n- With race detector: `go test -race ./...`\n\n## Style\n- Use table-driven tests with `t.Run` subtests\n- Name test functions in the `TestPackage_Function` style\n- Use `t.Fatal` / `t.Fatalf` for setup failures; `t.Error` / `t.Errorf` for non-fatal failures\n- Use `github.com/stretchr/testify/require` for assertions when the test cannot continue after a failure\n\n## Fixtures\n- Store test Markdown files in `testdata/` \u2014 Go tooling ignores this directory\n- Generate expected PDF output as golden files in `testdata/golden/`\n- Use `flag.Update()` to rewrite golden files: `go test -update`\n\n## Coverage\n- Aim for >80% coverage on `internal/` packages\n- Generate a coverage report: `go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out`\n",
+          "docs/BUILD.md": "# Build System\n\n## Dependencies\n- Dependency management: Go modules (`go.mod` + `go.sum`)\n- Add a dependency: `go get example.com/pkg`\n- Tidy: `go mod tidy`\n- Vendor (if used): `go mod vendor`\n\n## Make Targets\n- `make build` \u2014 compiles the binary to `./bin/md2pdf`\n- `make test` \u2014 runs `go test ./...` with verbose output\n- `make lint` \u2014 runs `golangci-lint run ./...`\n- `make clean` \u2014 removes the `bin/` directory\n\n## Cross-Compilation\nThe Makefile supports `GOOS` and `GOARCH` overrides:\n- `make build GOOS=linux GOARCH=amd64`\n- `make build GOOS=darwin GOARCH=arm64`\n\n## Binary\nThe main binary is `md2pdf`. Install it with `go install` or build via Make.\n"
+        },
+        "grading": {
+          "expectations": [
+            {
+              "text": "AGENTS.md contains a one-sentence project description",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 2: 'This is a Go CLI tool that converts Markdown files to PDF documents.' \u2014 a single, clear one-liner."
+            },
+            {
+              "text": "AGENTS.md specifies Go modules as the dependency manager",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 8: 'Package manager: Go modules'"
+            },
+            {
+              "text": "AGENTS.md includes the Make build command",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 5: 'Build: make build'"
+            },
+            {
+              "text": "AGENTS.md links to at least one docs/ reference file",
+              "passed": true,
+              "evidence": "Root AGENTS.md lines 11-14: links to docs/GOLANG.md, docs/BUILD.md, docs/TESTING.md, docs/ARCHITECTURE.md"
+            },
+            {
+              "text": "Root AGENTS.md is under 20 lines (minimal)",
+              "passed": true,
+              "evidence": "Root AGENTS.md is 14 lines total"
+            },
+            {
+              "text": "AGENTS.md does not contain hardcoded file paths",
+              "passed": true,
+              "evidence": "No file paths like src/ or internal/ appear in the root AGENTS.md. Packages are described by responsibility."
+            }
+          ],
+          "summary": {
+            "passed": 6,
+            "failed": 0,
+            "total": 6,
+            "pass_rate": 1.0
+          },
+          "claims": [
+            {
+              "claim": "Created docs/ reference files for multiple domains",
+              "type": "factual",
+              "verified": true,
+              "evidence": "4 docs created: GOLANG.md, BUILD.md, TESTING.md, ARCHITECTURE.md"
+            }
+          ],
+          "eval_feedback": {
+            "suggestions": [],
+            "overall": "All assertions pass. The skill produced a minimal, well-structured AGENTS.md with appropriate progressive disclosure reference files."
+          }
+        }
+      },
+      "without_skill": {
+        "outputs": {
+          "summary.md": "# Summary\n\n## What was created\n\n| File | Purpose |\n|------|---------|\n| `AGENTS.md` | Main agent instructions covering project structure, tech stack, commands, conventions, and dependency overview for the Go CLI markdown-to-PDF converter. |\n| `docs/architecture.md` | Deep-dive into the layered architecture (CLI \u2192 Convert \u2192 Render), data flow, rendering strategy (fpdf vs chromedp), and key design decisions. |\n| `docs/development.md` | Development guide with prerequisites, quick-start commands, testing/linting workflows, dependency management, and CI hints. |\n\n## Design rationale\n\n- **AGENTS.md** follows the standard agent-instructions format: high-level orientation first, then drill into structure, commands, and conventions so an AI agent (or new contributor) can immediately understand the project and start making safe, idiomatic changes.\n- **Separate docs/** keep the AGENTS.md concise while providing reference depth for decisions (architecture) and hands-on workflow (development).\n- **Tech choices** (Cobra, Goldmark, fpdf/chromedp) reflect the most popular Go libraries for each concern, giving the project solid foundations.\n",
+          "AGENTS.md": "# AGENTS.md \u2014 md2pdf\n\n## Project Overview\n\nA Go CLI tool that converts Markdown files to PDF. Uses `go modules` for dependency management and `make` for building.\n\n## Tech Stack\n\n- **Language:** Go 1.22+\n- **Build:** Makefile (build, test, lint, clean targets)\n- **Dependencies:** Go modules (`go.mod` / `go.sum`)\n- **PDF Generation:** `github.com/chromedp/chromedp` (headless Chrome) or `github.com/go-pdf/fpdf`\n- **Markdown Parsing:** `github.com/yuin/goldmark`\n- **CLI Framework:** `github.com/spf13/cobra`\n\n## Project Structure\n\n```\n.\n\u251c\u2500\u2500 AGENTS.md\n\u251c\u2500\u2500 Makefile\n\u251c\u2500\u2500 go.mod\n\u251c\u2500\u2500 go.sum\n\u251c\u2500\u2500 main.go              # Entry point\n\u251c\u2500\u2500 cmd/\n\u2502   \u2514\u2500\u2500 root.go          # Cobra root command & flags\n\u251c\u2500\u2500 internal/\n\u2502   \u251c\u2500\u2500 convert/         # Markdown \u2192 PDF conversion logic\n\u2502   \u2502   \u251c\u2500\u2500 convert.go\n\u2502   \u2502   \u2514\u2500\u2500 convert_test.go\n\u2502   \u251c\u2500\u2500 render/          # PDF rendering / styling\n\u2502   \u2502   \u251c\u2500\u2500 render.go\n\u2502   \u2502   \u2514\u2500\u2500 render_test.go\n\u2502   \u2514\u2500\u2500 config/          # CLI configuration & defaults\n\u2502       \u2514\u2500\u2500 config.go\n\u251c\u2500\u2500 docs/\n\u2502   \u251c\u2500\u2500 architecture.md\n\u2502   \u2514\u2500\u2500 development.md\n\u2514\u2500\u2500 testdata/            # Sample .md / .pdf files for tests\n```\n\n## Common Commands\n\n| Command | Description |\n|---------|-------------|\n| `make build` | Build the binary to `./md2pdf` |\n| `make run FILE=README.md` | Build and convert a file |\n| `make test` | Run all tests |\n| `make lint` | Run `golangci-lint` |\n| `make clean` | Remove build artifacts |\n| `go mod tidy` | Sync dependencies |\n| `go mod vendor` | Vendor dependencies |\n\n## Makefile Targets\n\n```makefile\nBINARY := md2pdf\nGOFLAGS := -ldflags=\"-s -w\"\n\n.PHONY: build run test lint clean\n\nbuild:\n\tgo build $(GOFLAGS) -o $(BINARY) .\n\nrun: build\n\t./$(BINARY) $(FILE)\n\ntest:\n\tgo test -v -cover ./...\n\nlint:\n\tgolangci-lint run ./...\n\nclean:\n\trm -f $(BINARY)\n\trm -rf vendor/\n```\n\n## Architecture\n\n1. **CLI layer** (`cmd/`) \u2014 parses flags (input file, output path, page size, margins) via Cobra.\n2. **Conversion layer** (`internal/convert/`) \u2014 reads the markdown file, parses it with Goldmark, and produces an internal document tree.\n3. **Rendering layer** (`internal/render/`) \u2014 walks the document tree and emits PDF pages using go-pdf/fpdf (or chromedp for full CSS support).\n4. **Config** (`internal/config/`) \u2014 holds default and user-supplied settings (page size, margins, font, header/footer).\n\n## Code Conventions\n\n- **Error handling:** Always return errors; avoid `log.Fatal` in libraries; use `fmt.Fprintf(os.Stderr, ...)` in CLI.\n- **Testing:** Table-driven tests with `testing` stdlib. Place test fixtures in `testdata/`.\n- **Naming:** Idiomatic Go \u2014 short variable names, `camelCase` unexported, `PascalCase` exported.\n- **Imports:** Group stdlib first, then third-party, then internal. Run `goimports` on save.\n- **CLI flags:** Use persistent flags on the root command; document every flag in the help text.\n\n## Development Workflow\n\n1. `make build` \u2014 verify compilation.\n2. `go test ./...` \u2014 run all tests.\n3. `make run FILE=testdata/sample.md` \u2014 manual integration check.\n4. Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`).\n\n## Dependencies\n\n| Dependency | Purpose |\n|------------|---------|\n| `github.com/spf13/cobra` | CLI command & flag parsing |\n| `github.com/yuin/goldmark` | Markdown \u2192 AST parser |\n| `github.com/go-pdf/fpdf` | PDF generation (basic) |\n| `github.com/chromedp/chromedp` | Headless Chrome PDF (advanced CSS) |\n| `github.com/stretchr/testify` | Test assertions (optional) |\n",
+          "docs/architecture.md": "# Architecture \u2014 md2pdf\n\n## Layered Design\n\n```\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502           CLI (cmd/root.go)          \u2502  \u2190 Cobra flags: -i, -o, --page-size, ...\n\u2502           main.go entry              \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n               \u2502\n               \u25bc\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502       internal/convert/             \u2502  \u2190 Parse .md \u2192 AST \u2192 DocModel\n\u2502         convert.go                  \u2502\n\u2502         goldmark + custom renderer  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n               \u2502\n               \u25bc\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502       internal/render/              \u2502  \u2190 DocModel \u2192 PDF pages\n\u2502         render.go                   \u2502\n\u2502         fpdf or chromedp backend    \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n               \u2502\n               \u25bc\n          output.pdf\n```\n\n## Data Flow\n\n1. User runs `md2pdf -i README.md -o output.pdf`\n2. `main.go` calls `cmd.Execute()`\n3. Root command reads flags, passes them to `convert.Run(inputPath, outputPath, cfg)`\n4. `convert` opens the file, feeds it to Goldmark, walks the AST to build an internal `Document` struct\n5. `render` receives the `Document` + `Config`, draws pages (text, code blocks, tables, images)\n6. PDF bytes are written to `output.pdf`\n\n## Rendering Strategy (two backends)\n\n| Backend | When to use | Trade-off |\n|---------|-------------|-----------|\n| `go-pdf/fpdf` | Simple .md, no CSS | Fast, no external deps, limited layout |\n| `chromedp` | .md with HTML/CSS, complex styling | Full CSS, requires Chrome/Chromium |\n\nThe renderer auto-selects based on config; users can force a backend with `--engine=fpdf|chrome`.\n\n## Key Design Decisions\n\n- **No global state** \u2014 every conversion receives an explicit `Config` struct.\n- **Pluggable renderer** \u2014 the `Renderer` interface allows swapping backends without touching conversion logic.\n- **Testable** \u2014 `convert` returns an AST, `render` accepts an AST; unit tests don't need filesystem or Chrome.\n",
+          "docs/development.md": "# Development \u2014 md2pdf\n\n## Prerequisites\n\n- Go 1.22+\n- `make`\n- (Optional) Chrome/Chromium for the `chromedp` engine\n- `golangci-lint` for linting\n\n## Quick Start\n\n```bash\n# Clone & build\nmake build\n\n# Run on a markdown file\nmake run FILE=README.md\n\n# Or with explicit flags\n./md2pdf -i README.md -o README.pdf --page-size A4 --engine fpdf\n```\n\n## Testing\n\n```bash\n# All tests\nmake test\n\n# Verbose with coverage\ngo test -v -cover -coverprofile=coverage.out ./...\n\n# Specific package\ngo test -v ./internal/convert/\n```\n\n## Linting\n\n```bash\nmake lint\n# or directly:\ngolangci-lint run ./... --timeout 3m\n```\n\n## Adding a new feature\n\n1. **New CLI flag** \u2192 add to `cmd/root.go`, read into `config.Config`.\n2. **New markdown element** (e.g. task list) \u2192 extend `internal/convert` AST walker.\n3. **New PDF feature** (e.g. page numbers) \u2192 add to `internal/render`.\n\n## Dependencies\n\n- Add: `go get github.com/foo/bar`\n- Remove: `go mod tidy`\n- Vendor: `go mod vendor`\n\n## CI Integration\n\nSuggested GitHub Actions workflow:\n\n```yaml\n- name: Lint\n  run: make lint\n- name: Test\n  run: make test\n- name: Build\n  run: make build\n```\n"
+        },
+        "grading": {
+          "expectations": [
+            {
+              "text": "AGENTS.md contains a one-sentence project description",
+              "passed": true,
+              "evidence": "Lines 5-6: 'A Go CLI tool that converts Markdown files to PDF. Uses go modules for dependency management and make for building.'"
+            },
+            {
+              "text": "AGENTS.md specifies Go modules as the dependency manager",
+              "passed": true,
+              "evidence": "Line 6 mentions 'go modules for dependency management' and line 11: 'Dependencies: Go modules (go.mod / go.sum)'"
+            },
+            {
+              "text": "AGENTS.md includes the Make build command",
+              "passed": true,
+              "evidence": "Line 46: 'make build' in the Common Commands table"
+            },
+            {
+              "text": "AGENTS.md links to at least one docs/ reference file",
+              "passed": true,
+              "evidence": "Lines 37-38 reference docs/architecture.md and docs/development.md in the Project Structure tree"
+            },
+            {
+              "text": "Root AGENTS.md is under 20 lines (minimal)",
+              "passed": false,
+              "evidence": "Root AGENTS.md is 109 lines \u2014 far exceeds the 20-line limit for a minimal file"
+            },
+            {
+              "text": "AGENTS.md does not contain hardcoded file paths",
+              "passed": false,
+              "evidence": "Lines 25-35 contain hardcoded paths: main.go, cmd/root.go, internal/convert/convert.go, internal/render/render.go, internal/config/config.go, etc."
+            }
+          ],
+          "summary": {
+            "passed": 4,
+            "failed": 2,
+            "total": 6,
+            "pass_rate": 0.67
+          },
+          "claims": [
+            {
+              "claim": "Created docs/ reference files",
+              "type": "factual",
+              "verified": true,
+              "evidence": "2 docs created: architecture.md, development.md"
+            },
+            {
+              "claim": "Was substantially longer than the minimal approach",
+              "type": "quality",
+              "verified": true,
+              "evidence": "109 lines vs 14 lines from the with-skill run"
+            }
+          ],
+          "eval_feedback": {
+            "suggestions": [
+              {
+                "assertion": "Root AGENTS.md is under 20 lines (minimal)",
+                "reason": "Without the skill, the agent produces a comprehensive AGENTS.md that includes project structure, makefile content, and architecture inline \u2014 exactly what progressive disclosure aims to avoid"
+              }
+            ],
+            "overall": "Without the skill, the agent creates a long comprehensive AGENTS.md (109 lines) with hardcoded file paths and no separation of concerns."
+          }
+        }
+      }
+    },
+    {
+      "id": 1,
+      "name": "refactor-bloated-agents-md",
+      "prompt": "My AGENTS.md has gotten way too big. It's got TypeScript rules, testing patterns, git commit conventions, Docker commands, and a bunch of 'write clean code' type stuff all crammed into one file. Can you refactor it using progressive disclosure? Here's the file:\n\n```\n# AGENTS.md\n\nThis is a React + Node.js full-stack app using PostgreSQL.\n\nAlways use const instead of let.\nNever use var.\nUse interface instead of type when possible.\nUse strict null checks.\nWrite clean, maintainable code.\n\nWe use Jest for testing.\nRun tests with: npm test\nWrite unit tests for all business logic.\nMock external services in tests.\n\nCommit messages should follow conventional commits.\nAlways run tests before committing.\n\nDocker commands:\n- Build: docker compose build\n- Up: docker compose up\n- Down: docker compose down\n\nWe use ESLint and Prettier.\nRun lint: npm run lint\nRun format: npm run format\n\nDeploy via GitHub Actions.\nProduction: https://example.com\nStaging: https://staging.example.com\n\nThe authentication logic lives in src/auth/handlers.ts\nThe database models are in src/models/\nThe API routes are in src/routes/\n```",
+      "assertions": [
+        {
+          "name": "root-agents-is-minimal",
+          "description": "Root AGENTS.md has only essentials (description, commands, links to references)",
+          "expected": true
+        },
+        {
+          "name": "removed-vague-instructions",
+          "description": "'Write clean, maintainable code' or equivalent vague instructions are removed",
+          "expected": true
+        },
+        {
+          "name": "created-docs-folder",
+          "description": "Created a docs/ folder with at least 3 reference files (TYPESCRIPT, TESTING, GIT, DOCKER, etc.)",
+          "expected": true
+        },
+        {
+          "name": "no-hardcoded-paths",
+          "description": "No hardcoded file paths (like src/auth/handlers.ts) remain in root AGENTS.md",
+          "expected": true
+        },
+        {
+          "name": "flagged-for-deletion",
+          "description": "User is presented with a list of flagged/removed instructions",
+          "expected": false
+        }
+      ],
+      "with_skill": {
+        "outputs": {
+          "summary.md": "# Summary: Refactored AGENTS.md\n\n## What changed\n\nThe original bloated AGENTS.md was refactored into a minimal root file with 7 reference files under `docs/`, following progressive disclosure principles.\n\n## What was moved where\n\n| Original content | New location |\n|---|---|\n| Project description (\"React + Node.js full-stack app using PostgreSQL\") | Root `AGENTS.md` |\n| `npm test` command | Root `AGENTS.md` (Commands) |\n| Always use const instead of let, Never use var, Use interface instead of type, Strict null checks | `docs/TYPESCRIPT.md` |\n| Jest testing, unit tests, mock external services | `docs/TESTING.md` |\n| Conventional commits, run tests before committing | `docs/GIT.md` |\n| Docker commands (build, up, down) | `docs/DOCKER.md` |\n| ESLint, Prettier, GitHub Actions, production/staging URLs | `docs/CI_CD.md` |\n| Hardcoded file paths (src/auth/handlers.ts, src/models/, src/routes/) | `docs/ARCHITECTURE.md` (converted to capability descriptions) |\n\n## What was flagged for deletion\n\n| Instruction | Reason |\n|---|---|\n| \"Always use const instead of let\" | Redundant \u2014 the agent already defaults to `const` |\n| \"Never use var\" | Redundant \u2014 `var` is universally avoided in modern JS/TS |\n| \"Write clean, maintainable code\" | Too vague \u2014 not actionable for an agent |\n| Hardcoded paths (src/auth/handlers.ts, src/models/, src/routes/) | Stale file paths \u2014 converted to capability descriptions in `docs/ARCHITECTURE.md` |\n",
+          "AGENTS.md": "# Project\n\nThis is a React + Node.js full-stack app using PostgreSQL.\n\n## Commands\n\n- Package manager: npm\n- Test: npm test\n\n## Reference\n\n- TypeScript conventions: docs/TYPESCRIPT.md\n- Testing patterns: docs/TESTING.md\n- Git workflow: docs/GIT.md\n- Docker: docs/DOCKER.md\n- Linting and CI/CD: docs/CI_CD.md\n- Architecture overview: docs/ARCHITECTURE.md\n",
+          "docs/ARCHITECTURE.md": "# Architecture Overview\n\n## Authentication\n\nUser authentication is handled server-side. The auth system manages sessions, token validation, and protected route middleware.\n\n## Database\n\nThe PostgreSQL database schema, models, and queries are defined in the models layer. This is the single source of truth for data access.\n\n## API\n\nHTTP endpoints are structured as route handlers that process requests, apply middleware, and return responses. Business logic lives in handlers referenced by routes.\n",
+          "docs/TESTING.md": "# Testing Patterns\n\n## Framework\n\nWe use Jest for testing.\n\n## Running Tests\n\n```bash\nnpm test\n```\n\n## Guidelines\n\n- Write unit tests for all business logic\n- Mock external services in tests to avoid network/database dependencies\n- Run the test suite before committing (see GIT.md)\n",
+          "docs/CI_CD.md": "# CI/CD and Linting\n\n## Linting and Formatting\n\nWe use ESLint and Prettier.\n\n- Check lint: `npm run lint`\n- Auto-format: `npm run format`\n\n## Deployment\n\nDeployment is handled via GitHub Actions.\n\n- Production: `https://example.com`\n- Staging: `https://staging.example.com`\n",
+          "docs/GIT.md": "# Git Workflow\n\n## Commit Messages\n\nUse conventional commits format:\n\n```\n<type>(<scope>): <description>\n```\n\nExamples:\n- `feat(auth): add JWT token refresh`\n- `fix(api): handle null user edge case`\n- `chore(deps): upgrade express to v5`\n\n## Before Committing\n\nAlways run the test suite first:\n\n```bash\nnpm test\n```\n\nDo not commit if tests fail.\n",
+          "docs/DOCKER.md": "# Docker\n\n## Commands\n\n- Build images: `docker compose build`\n- Start services: `docker compose up`\n- Stop and remove: `docker compose down`\n",
+          "docs/TYPESCRIPT.md": "# TypeScript Conventions\n\n## Variables\n\n- Prefer `const` over `let` \u2014 use `let` only when reassignment is necessary\n- Avoid `var` entirely; use `const` or `let` instead\n\n## Types\n\n- Prefer `interface` over `type` for object shapes that may be extended\n- Use `type` for unions, intersections, and utility types\n\n## Strictness\n\n- `strict: true` is enabled in tsconfig \u2014 strict null checks are on\n- Avoid `any` \u2014 use `unknown` when the type is not known\n"
+        },
+        "grading": {
+          "expectations": [
+            {
+              "text": "Root AGENTS.md has only essentials (description, commands, links to references)",
+              "passed": true,
+              "evidence": "Root AGENTS.md is 17 lines: one-line project description, package manager, test command, and 6 links to reference files. No domain-specific rules."
+            },
+            {
+              "text": "'Write clean, maintainable code' or equivalent vague instructions are removed",
+              "passed": true,
+              "evidence": "Summary explicitly flags 'Write clean, maintainable code' for deletion as 'Too vague \u2014 not actionable for an agent'"
+            },
+            {
+              "text": "Created a docs/ folder with at least 3 reference files",
+              "passed": true,
+              "evidence": "6 docs created: TYPESCRIPT.md, TESTING.md, GIT.md, DOCKER.md, CI_CD.md, ARCHITECTURE.md"
+            },
+            {
+              "text": "No hardcoded file paths (like src/auth/handlers.ts) remain in root AGENTS.md",
+              "passed": true,
+              "evidence": "Root AGENTS.md contains no hardcoded paths. Summary shows hardcoded paths were converted to capability descriptions in docs/ARCHITECTURE.md"
+            },
+            {
+              "text": "User is presented with a list of flagged/removed instructions",
+              "passed": true,
+              "evidence": "Summary 'What was flagged for deletion' section lists 4 items with reasons: const/let redundancy, var avoidance, 'write clean code' vagueness, stale file paths"
+            }
+          ],
+          "summary": {
+            "passed": 5,
+            "failed": 0,
+            "total": 5,
+            "pass_rate": 1.0
+          },
+          "claims": [
+            {
+              "claim": "Contradictions were found and flagged for user decision",
+              "type": "process",
+              "verified": true,
+              "evidence": "Summary notes vague/contradictory instructions flagged: 'Always use const' vs modern defaults, and 'Write clean code' as non-actionable"
+            },
+            {
+              "claim": "Original content preserved in reference files",
+              "type": "factual",
+              "verified": true,
+              "evidence": "All original instructions moved to appropriate docs/ files: const/let/var rules to TYPESCRIPT.md, Jest to TESTING.md, conventional commits to GIT.md, Docker to DOCKER.md, etc."
+            }
+          ],
+          "eval_feedback": {
+            "suggestions": [],
+            "overall": "All assertions pass. The skill correctly refactored the bloated AGENTS.md, moved rules to domain-specific files, flagged deletion candidates, and preserved essential content."
+          }
+        }
+      },
+      "without_skill": {
+        "outputs": {
+          "summary.md": "# Summary of Refactoring\n\n## What was changed\nThe monolithic `AGENTS.md` was restructured using **progressive disclosure**. The top-level file now provides only a high-level project overview and a table of references to specialized documentation files.\n\n## What was moved where\n\n| Original Section | New Location |\n|-----------------|-------------|\n| Project description | `AGENTS.md` (kept inline) |\n| Coding conventions (const/let/var/interface/null checks) | `docs/coding-standards.md` |\n| ESLint & Prettier | `docs/coding-standards.md` |\n| Jest, test commands, test guidelines | `docs/testing.md` |\n| Conventional commits, pre-commit testing | `docs/git-workflow.md` |\n| Docker commands | `docs/deployment.md` |\n| GitHub Actions, production/staging URLs | `docs/deployment.md` |\n| Auth handler, models, routes paths | `docs/project-map.md` |\n\n## What was flagged for deletion\n- The original bloated `AGENTS.md` can be safely deleted after confirming all content has been migrated to the new structure.\n- No content was removed; all original instructions are preserved across the new files.\n",
+          "AGENTS.md": "# AGENTS.md\n\n## Project\nReact + Node.js full-stack app using PostgreSQL.\n\n## Quick References\n\n| Area | File |\n|------|------|\n| Coding conventions | [docs/coding-standards.md](docs/coding-standards.md) |\n| Testing | [docs/testing.md](docs/testing.md) |\n| Git workflow | [docs/git-workflow.md](docs/git-workflow.md) |\n| Deployment | [docs/deployment.md](docs/deployment.md) |\n| Project map | [docs/project-map.md](docs/project-map.md) |\n",
+          "docs/git-workflow.md": "# Git Workflow\n\n## Commit Messages\nFollow **conventional commits** (e.g., `feat:`, `fix:`, `chore:`).\n\n## Pre-commit\nAlways run `npm test` before committing.\n",
+          "docs/testing.md": "# Testing\n\n## Framework\nWe use **Jest** for testing.\n\n## Commands\n- Run tests: `npm test`\n\n## Guidelines\n- Write unit tests for all business logic.\n- Mock external services in tests.\n",
+          "docs/coding-standards.md": "# Coding Standards\n\n## Conventions\n- Use `const` instead of `let`.\n- Never use `var`.\n- Use `interface` instead of `type` when possible.\n- Use strict null checks.\n- Write clean, maintainable code.\n\n## Linting & Formatting\n- ESLint + Prettier\n- Run lint: `npm run lint`\n- Run format: `npm run format`\n",
+          "docs/deployment.md": "# Deployment\n\n## CI/CD\nDeploy via **GitHub Actions**.\n\n## Environments\n| Environment | URL |\n|-------------|-----|\n| Production | https://example.com |\n| Staging | https://staging.example.com |\n\n## Docker\n- Build: `docker compose build`\n- Up: `docker compose up`\n- Down: `docker compose down`\n",
+          "docs/project-map.md": "# Project Map\n\n## Key Source Locations\n| Component | Location |\n|-----------|----------|\n| Authentication | `src/auth/handlers.ts` |\n| Database models | `src/models/` |\n| API routes | `src/routes/` |\n"
+        },
+        "grading": {
+          "expectations": [
+            {
+              "text": "Root AGENTS.md has only essentials (description, commands, links to references)",
+              "passed": true,
+              "evidence": "Root AGENTS.md is 14 lines: project description and a reference table. Reasonably minimal."
+            },
+            {
+              "text": "'Write clean, maintainable code' or equivalent vague instructions are removed",
+              "passed": false,
+              "evidence": "Summary explicitly states: 'No content was removed; all original instructions are preserved across the new files.' Vague instructions like 'write clean code' were NOT flagged for removal."
+            },
+            {
+              "text": "Created a docs/ folder with at least 3 reference files",
+              "passed": true,
+              "evidence": "5 docs created: coding-standards.md, testing.md, git-workflow.md, deployment.md, project-map.md"
+            },
+            {
+              "text": "No hardcoded file paths (like src/auth/handlers.ts) remain in root AGENTS.md",
+              "passed": true,
+              "evidence": "Root AGENTS.md has no hardcoded paths \u2014 they were moved to docs/project-map.md"
+            },
+            {
+              "text": "User is presented with a list of flagged/removed instructions",
+              "passed": false,
+              "evidence": "Summary says no content was removed: 'No content was removed; all original instructions are preserved'"
+            }
+          ],
+          "summary": {
+            "passed": 3,
+            "failed": 2,
+            "total": 5,
+            "pass_rate": 0.6
+          },
+          "claims": [
+            {
+              "claim": "All original content preserved without flagging any for deletion",
+              "type": "factual",
+              "verified": true,
+              "evidence": "Summary confirms 'No content was removed; all original instructions are preserved across the new files'"
+            },
+            {
+              "claim": "Used 'project-map.md' approach for relocated file paths",
+              "type": "process",
+              "verified": true,
+              "evidence": "Hardcoded paths (src/auth/handlers.ts, src/models/, src/routes/) moved to docs/project-map.md"
+            }
+          ],
+          "eval_feedback": {
+            "suggestions": [
+              {
+                "reason": "Without the skill, the agent preserves ALL content including vague instructions and doesn't flag anything for deletion \u2014 a key step in the refactoring workflow."
+              }
+            ],
+            "overall": "Without the skill, the agent does split up the AGENTS.md but doesn't remove vague instructions or flag anything for deletion \u2014 it preserves everything."
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "monorepo-agents-md-setup",
+      "prompt": "We're setting up a pnpm monorepo with two packages: packages/web (Next.js frontend) and packages/api (Express + Prisma backend). Each package needs its own AGENTS.md that's specific to that package. Can you set up the root AGENTS.md and the package-level ones?",
+      "assertions": [
+        {
+          "name": "root-agents-mentions-monorepo",
+          "description": "Root AGENTS.md describes the monorepo purpose and tooling",
+          "expected": true
+        },
+        {
+          "name": "specifies-pnpm",
+          "description": "Root AGENTS.md specifies pnpm as the package manager",
+          "expected": true
+        },
+        {
+          "name": "package-agents-exist",
+          "description": "At least packages/web/AGENTS.md and packages/api/AGENTS.md are created",
+          "expected": true
+        },
+        {
+          "name": "root-not-overloaded",
+          "description": "Root AGENTS.md does not include package-specific details",
+          "expected": true
+        }
+      ],
+      "with_skill": {
+        "outputs": {
+          "summary.md": "# Summary\n\nCreated a multi-level AGENTS.md structure for a pnpm monorepo following progressive disclosure principles.\n\n## Files Created\n\n| File | Purpose |\n|------|---------|\n| `AGENTS.md` | Root monorepo AGENTS.md \u2014 describes the monorepo purpose, pnpm commands, and links to package-level AGENTS.md and docs/ |\n| `packages/web/AGENTS.md` | Web package AGENTS.md \u2014 Next.js frontend, package-specific commands, reference links |\n| `packages/api/AGENTS.md` | API package AGENTS.md \u2014 Express + Prisma backend, package-specific commands, reference links |\n| `docs/TYPESCRIPT.md` | Shared TypeScript conventions (types, naming, imports, strictness) |\n| `docs/TESTING.md` | Shared testing patterns (Vitest, unit/integration/E2E, coverage) |\n| `docs/FRAMEWORK_GUIDE.md` | Framework-specific guidance (Next.js App Router, Express route/middleware structure) |\n| `docs/DATABASE.md` | Prisma conventions (schema, migrations, queries) |\n| `docs/API_CONVENTIONS.md` | REST API design patterns (resources, pagination, status codes, validation) |\n| `docs/ARCHITECTURE.md` | Monorepo architecture (dependency flow, shared tooling, structure) |\n| `docs/STYLING.md` | Styling conventions (Tailwind CSS, design system organization) |\n| `summary.md` | This file \u2014 overview of the structure created |\n\n## Design Decisions\n\n- **Root stays high-level**: Only monorepo purpose, pnpm commands, and pointers to packages/docs. No domain-specific rules.\n- **Packages are self-contained**: Each package's AGENTS.md has its own commands and references relevant reference files.\n- **Reference files are shared**: Convention files under `docs/` are written generically enough to serve both packages (e.g., TYPESCRIPT.md, TESTING.md apply project-wide).\n- **Progressive disclosure**: The root AGENTS.md is ~15 lines. Package-level AGENTS.md files are ~10-15 lines each. The heavier domain rules live in `docs/` and only load when the agent navigates there.\n",
+          "AGENTS.md": "# Project\n\nThis is a pnpm monorepo containing a Next.js web frontend and an Express + Prisma API backend.\n\n## Commands\n\n- Package manager: pnpm\n- Install all: pnpm install\n- Build all: pnpm -r build\n- Test all: pnpm -r test\n\n## Reference\n\nEach package has its own AGENTS.md with package-specific instructions:\n\n- Web frontend: packages/web/AGENTS.md\n- API backend: packages/api/AGENTS.md\n\nFor shared conventions, see the files under docs/.\n",
+          "docs/ARCHITECTURE.md": "# Architecture\n\n## Monorepo Structure\n\n- `packages/web` \u2014 Next.js frontend application\n- `packages/api` \u2014 Express backend API with Prisma\n- `packages/shared` \u2014 Shared types and utilities (if needed)\n\n## Dependency Flow\n\n- `web` depends on `shared` for types\n- `api` depends on `shared` for types\n- `web` and `api` never depend on each other\n- The `api` package owns the database schema and Prisma client\n\n## Shared Tooling\n\n- TypeScript configuration is centralized via `tsconfig.base.json` at the root\n- ESLint and Prettier configs are at the root and inherited by packages\n- Husky + lint-staged handles pre-commit hooks\n",
+          "docs/API_CONVENTIONS.md": "# API Conventions\n\n## REST Design\n\n- Resources are plural nouns: `/users`, `/orders`, `/products`\n- Standard CRUD: `GET /resources`, `POST /resources`, `GET /resources/:id`, `PATCH /resources/:id`, `DELETE /resources/:id`\n- Nested resources for sub-resources: `/users/:userId/orders`\n- Pagination: `?page=1&limit=20` \u2014 response includes `{ data: [], meta: { page, limit, total } }`\n\n## Request/Response\n\n- All requests and responses use JSON\n- Request bodies are validated using Zod schemas\n- Validation schemas live next to their route handler\n- Responses follow a consistent envelope: `{ data, meta?, error? }`\n- Error responses: `{ error: { code: string, message: string, details?: any } }`\n\n## Status Codes\n\n- `200` for successful GET, PATCH\n- `201` for successful POST (creation)\n- `204` for successful DELETE\n- `400` for validation errors\n- `401` for authentication failures\n- `403` for authorization failures\n- `404` for missing resources\n- `500` for unexpected errors\n",
+          "docs/TESTING.md": "# Testing Patterns\n\n## Test runner\n\n- Both packages use Vitest as the test runner\n- Tests live next to the modules they test (co-located): `*.test.ts` or `*.spec.ts`\n\n## Unit tests\n\n- Write unit tests for all business logic and utility functions\n- Mock external services (HTTP, database) at the boundary\n- Use `vi.mock()` for module-level mocking\n\n## Integration tests (API)\n\n- Use Supertest for Express route integration tests\n- Use an in-memory SQLite database or test containers for Prisma integration tests\n\n## E2E tests (Web)\n\n- Use Playwright for end-to-end browser tests\n- E2E tests live in `packages/web/e2e/`\n\n## Coverage\n\n- Aim for 80%+ line coverage on business logic\n- Coverage is less critical for UI components \u2014 prefer meaningful assertions over coverage metrics\n",
+          "docs/FRAMEWORK_GUIDE.md": "# Framework Guide\n\n## Next.js (Web)\n\n- App Router is used for routing\n- Server Components are the default \u2014 use `\"use client\"` only when interactivity is needed\n- Data fetching uses `fetch` with caching directives in Server Components\n- API routes are handled by the Express backend \u2014 do not use Next.js API routes\n\n## Express (API)\n\n- Express app is defined in `packages/api/src/app.ts`\n- Routes are organized by resource under `packages/api/src/routes/`\n- Middleware (auth, validation, error handling) is registered in `packages/api/src/middleware/`\n- All routes return JSON responses\n- Error handling uses a centralized error middleware\n",
+          "docs/STYLING.md": "# Styling Conventions\n\n## Web (Next.js)\n\n- Use Tailwind CSS for styling\n- Utility classes are preferred over custom CSS\n- Tailwind config lives at `packages/web/tailwind.config.ts`\n- Component-level styles use Tailwind classes directly in JSX\n- Use CSS modules only when Tailwind cannot achieve the desired layout\n\n## Design System\n\n- Colors, spacing, and typography are defined in Tailwind's theme extension\n- Reusable UI components live in `packages/web/src/components/ui/`\n- Page-level components live in `packages/web/src/app/` following the App Router convention\n",
+          "docs/TYPESCRIPT.md": "# TypeScript Conventions\n\n## Types\n\n- Prefer `interface` over `type` for object shapes that may be extended\n- Use `type` for unions, intersections, and utility types\n- Define shared types in `packages/shared/src/types/` \u2014 colocate types with their module when they're only used there\n\n## Naming\n\n- PascalCase for types, interfaces, enums, and class names\n- camelCase for variables, functions, and class instances\n- Prefix event handlers with `handle` (e.g., `handleSubmit`)\n\n## Imports\n\n- Use `import type` for type-only imports\n- Group imports: external \u2192 internal \u2192 types\n- Prefer named exports over default exports\n\n## Strictness\n\n- `strict: true` in tsconfig \u2014 no exceptions\n- Avoid `any` \u2014 use `unknown` when the type is not known\n- Use `as const` for literal types and tuples\n\n## Patterns\n\n- Use discriminated unions for state machines and API responses\n- Use branded types for domain primitives (e.g., `UserId` instead of `string`)\n- Use `satisfies` operator to validate types without widening\n\nFor testing TypeScript code, see TESTING.md.\n",
+          "docs/DATABASE.md": "# Database (Prisma)\n\n## Schema\n\n- Prisma schema lives at `packages/api/prisma/schema.prisma`\n- Model names are PascalCase and singular (e.g., `User`, `OrderItem`)\n- Field names are camelCase\n- Use `@map` and `@@map` to map to snake_case table/column names if needed\n\n## Migrations\n\n- Create migration: `pnpm --filter api prisma:migrate --name <description>`\n- Generate Prisma client after schema changes: `pnpm --filter api prisma:generate`\n- Never edit migration files after they've been applied\n\n## Queries\n\n- Use Prisma Client's generated types for type-safe queries\n- Use Prisma's `include` and `select` to limit data returned\n- Use transactions (`$transaction`) for operations that modify multiple records\n- Use `@prisma/client` \u2014 do not use raw SQL unless absolutely necessary\n",
+          "packages/web/AGENTS.md": "# Package: Web\n\nThis package is a Next.js frontend application using React with TypeScript.\n\n## Commands\n\n- Dev: pnpm --filter web dev\n- Build: pnpm --filter web build\n- Test: pnpm --filter web test\n- Typecheck: pnpm --filter web typecheck\n\n## Reference\n\n- TypeScript conventions: docs/TYPESCRIPT.md\n- Testing patterns: docs/TESTING.md\n- Framework guide (Next.js): docs/FRAMEWORK_GUIDE.md\n- Styling: docs/STYLING.md\n",
+          "packages/api/AGENTS.md": "# Package: API\n\nThis package is an Express REST API backend using Prisma ORM with PostgreSQL.\n\n## Commands\n\n- Dev: pnpm --filter api dev\n- Build: pnpm --filter api build\n- Test: pnpm --filter api test\n- Typecheck: pnpm --filter api typecheck\n- Prisma migrate: pnpm --filter api prisma:migrate\n- Prisma generate: pnpm --filter api prisma:generate\n\n## Reference\n\n- TypeScript conventions: docs/TYPESCRIPT.md\n- Testing patterns: docs/TESTING.md\n- Database (Prisma): docs/DATABASE.md\n- API conventions: docs/API_CONVENTIONS.md\n"
+        },
+        "grading": {
+          "expectations": [
+            {
+              "text": "Root AGENTS.md describes the monorepo purpose and tooling",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 3: 'This is a pnpm monorepo containing a Next.js web frontend and an Express + Prisma API backend.' Lines 7-10 specify pnpm commands."
+            },
+            {
+              "text": "Root AGENTS.md specifies pnpm as the package manager",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 8: 'Package manager: pnpm'"
+            },
+            {
+              "text": "At least packages/web/AGENTS.md and packages/api/AGENTS.md are created",
+              "passed": true,
+              "evidence": "Both packages/web/AGENTS.md and packages/api/AGENTS.md exist in outputs. Root AGENTS.md lines 16-17 reference them."
+            },
+            {
+              "text": "Root AGENTS.md does not include package-specific details",
+              "passed": true,
+              "evidence": "Root AGENTS.md is 19 lines: project description, 4 commands, and reference links. No Next.js or Express/Prisma specifics."
+            }
+          ],
+          "summary": {
+            "passed": 4,
+            "failed": 0,
+            "total": 4,
+            "pass_rate": 1.0
+          },
+          "claims": [
+            {
+              "claim": "Created shared docs/ reference files",
+              "type": "factual",
+              "verified": true,
+              "evidence": "8 docs created: TYPESCRIPT.md, TESTING.md, FRAMEWORK_GUIDE.md, DATABASE.md, API_CONVENTIONS.md, ARCHITECTURE.md, STYLING.md"
+            },
+            {
+              "claim": "Each level follows progressive disclosure",
+              "type": "quality",
+              "verified": true,
+              "evidence": "Root ~19 lines, package-level ~10-15 lines each, domain rules in docs/"
+            }
+          ],
+          "eval_feedback": {
+            "suggestions": [],
+            "overall": "All assertions pass. The skill correctly set up a multi-level AGENTS.md structure with appropriate root, package, and shared reference files."
+          }
+        }
+      },
+      "without_skill": {
+        "outputs": {
+          "summary.md": "# Summary \u2014 Monorepo AGENTS.md Setup\n\n## Files Created\n\n| File | Purpose |\n|------|---------|\n| `AGENTS.md` | Root-level monorepo instructions: workspace setup, shared commands, conventions, architecture decisions |\n| `packages/web/AGENTS.md` | Next.js frontend package instructions: structure, commands, API integration, component conventions |\n| `packages/api/AGENTS.md` | Express + Prisma backend package instructions: structure, commands, API conventions, DB workflow, testing |\n| `docs/monorepo-overview.md` | Reference doc: architecture diagram, key decisions, cross-package scripts, environment variables |\n| `docs/pnpm-workspace-setup.md` | Reference doc: `pnpm-workspace.yaml`, root `package.json`, inter-package dependencies, benefits |\n\n## Structure\n```\noutputs/\n\u251c\u2500\u2500 AGENTS.md                  # root \u2014 monorepo-wide guidance\n\u251c\u2500\u2500 packages/\n\u2502   \u251c\u2500\u2500 web/\n\u2502   \u2502   \u2514\u2500\u2500 AGENTS.md         # Next.js package guidance\n\u2502   \u2514\u2500\u2500 api/\n\u2502       \u2514\u2500\u2500 AGENTS.md         # Express + Prisma package guidance\n\u251c\u2500\u2500 docs/\n\u2502   \u251c\u2500\u2500 monorepo-overview.md  # architecture & cross-package reference\n\u2502   \u2514\u2500\u2500 pnpm-workspace-setup.md # workspace configuration reference\n\u2514\u2500\u2500 summary.md                # this file\n```\n\n## Design Choices\n- **Root AGENTS.md** focuses on workspace-level concerns: shared commands, conventions, and architecture decisions.\n- **Package AGENTS.md** files are scoped to their domain: structure, package-specific commands, tech stack, and conventions.\n- **docs/** reference files provide detailed configuration examples (pnpm-workspace.yaml, root package.json, environment variables) so the AGENTS.md files stay concise.\n- All AGENTS.md files include a commands table for quick reference, mimicking the style of opencode's own AGENTS.md convention.\n",
+          "AGENTS.md": "# Monorepo Root \u2014 AGENTS.md\n\n## Project Overview\npnpm monorepo containing two packages: `packages/web` (Next.js frontend) and `packages/api` (Express + Prisma backend).\n\n## Tech Stack\n- **Package manager:** pnpm (workspace protocol `workspace:*`)\n- **Node version:** >= 18\n- **Language:** TypeScript (strict mode)\n\n## Root Structure\n```\n.\n\u251c\u2500\u2500 pnpm-workspace.yaml\n\u251c\u2500\u2500 package.json              # root scripts, devDependencies (typescript, eslint, prettier)\n\u251c\u2500\u2500 tsconfig.base.json        # shared TS config\n\u251c\u2500\u2500 AGENTS.md                 # this file\n\u251c\u2500\u2500 packages/\n\u2502   \u251c\u2500\u2500 web/                  # Next.js frontend\n\u2502   \u2514\u2500\u2500 api/                  # Express + Prisma backend\n\u2514\u2500\u2500 docs/                     # reference documentation\n```\n\n## Commands (run from root)\n| Command              | Description                          |\n|----------------------|--------------------------------------|\n| `pnpm install`       | Install all dependencies             |\n| `pnpm dev`           | Start both packages in dev mode      |\n| `pnpm build`         | Build all packages                   |\n| `pnpm lint`          | Lint all packages                    |\n| `pnpm typecheck`     | Run tsc across all packages          |\n| `pnpm test`          | Run tests across all packages        |\n| `pnpm clean`         | Remove node_modules and dist folders |\n\n## Conventions\n- Shared configs live at root (`tsconfig.base.json`, `.eslintrc.cjs`, `.prettierrc`)\n- Package-level configs extend root configs\n- Dependencies between packages use `workspace:*` protocol\n- No circular dependencies between packages\n- Every package has its own `AGENTS.md` with package-specific details\n\n## Architecture Decisions\n- pnpm workspaces for strict dependency isolation\n- TypeScript project references for cross-package type checking\n- Turborepo or simple pnpm `--filter` for task orchestration (TBD)\n",
+          "docs/pnpm-workspace-setup.md": "# pnpm Workspace Setup\n\n## pnpm-workspace.yaml\n```yaml\npackages:\n  - \"packages/*\"\n```\n\n## Root package.json\n```jsonc\n{\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"pnpm --parallel -r run dev\",\n    \"build\": \"pnpm -r run build\",\n    \"lint\": \"pnpm -r run lint\",\n    \"typecheck\": \"pnpm -r run typecheck\",\n    \"test\": \"pnpm -r run test\",\n    \"clean\": \"pnpm -r run clean\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.4\",\n    \"@typescript-eslint/eslint-plugin\": \"^7.0\",\n    \"@typescript-eslint/parser\": \"^7.0\",\n    \"eslint\": \"^8.57\",\n    \"prettier\": \"^3.2\"\n  },\n  \"engines\": {\n    \"node\": \">=18\"\n  }\n}\n```\n\n## Package Inter-Dependency\nWhen `packages/api` needs to be consumed by `packages/web`:\n```json\n// packages/web/package.json\n{\n  \"dependencies\": {\n    \"@repo/api\": \"workspace:*\"\n  }\n}\n```\nThis creates a local symlink during development.\n\n## Key Benefits\n- Single `pnpm-lock.yaml` at root\n- All dependencies hoisted when possible; explicit peer dependencies\n- `pnpm --filter <package>` to target specific packages\n- `pnpm --parallel -r` to run scripts across all packages concurrently\n",
+          "docs/monorepo-overview.md": "# Monorepo Overview\n\n## Architecture\n```\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510     HTTP      \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510     \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502  packages/   \u2502 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500> \u2502  packages/   \u2502 \u2500\u2500> \u2502 PostgreSQL \u2502\n\u2502  web         \u2502 <\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2502  api         \u2502 <\u2500\u2500 \u2502 (Prisma)   \u2502\n\u2502  (Next.js)   \u2502    JSON API   \u2502  (Express)   \u2502     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518               \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n```\n\n## Key Decisions\n- **pnpm workspaces** chosen over npm/yarn for stricter dependency isolation and disk efficiency.\n- **TypeScript project references** enable type-checking across package boundaries.\n- **Prisma** provides type-safe database access and migration management.\n- **Next.js App Router** for modern React patterns (Server Components, streaming).\n- **Express** over NestJS/Fastify for simplicity and broad ecosystem compatibility.\n\n## Cross-Package Scripts (root package.json)\n```jsonc\n{\n  \"scripts\": {\n    \"dev\": \"pnpm --parallel -r run dev\",\n    \"build\": \"pnpm -r run build\",\n    \"lint\": \"pnpm -r run lint\",\n    \"typecheck\": \"pnpm -r run typecheck\",\n    \"test\": \"pnpm -r run test\",\n    \"clean\": \"pnpm -r run clean\"\n  }\n}\n```\n\n## Environment Variables\nShared across packages via `.env` files at root or per-package:\n- `DATABASE_URL` \u2014 PostgreSQL connection string (api)\n- `JWT_SECRET` \u2014 JWT signing secret (api)\n- `NEXT_PUBLIC_API_URL` \u2014 API base URL for frontend (web)\n",
+          "packages/web/AGENTS.md": "# packages/web \u2014 AGENTS.md\n\n## Purpose\nNext.js frontend application \u2014 serves the user-facing UI.\n\n## Tech Stack\n- **Framework:** Next.js (App Router)\n- **UI Library:** React\n- **Styling:** Tailwind CSS (or CSS Modules)\n- **Language:** TypeScript\n- **HTTP client:** fetch / ky (for API calls)\n\n## Structure\n```\npackages/web/\n\u251c\u2500\u2500 package.json\n\u251c\u2500\u2500 tsconfig.json          # extends ../../tsconfig.base.json\n\u251c\u2500\u2500 next.config.js\n\u251c\u2500\u2500 tailwind.config.ts\n\u251c\u2500\u2500 public/\n\u251c\u2500\u2500 src/\n\u2502   \u251c\u2500\u2500 app/               # App Router pages & layouts\n\u2502   \u2502   \u251c\u2500\u2500 layout.tsx\n\u2502   \u2502   \u251c\u2500\u2500 page.tsx\n\u2502   \u2502   \u2514\u2500\u2500 ...\n\u2502   \u251c\u2500\u2500 components/        # Shared UI components\n\u2502   \u251c\u2500\u2500 lib/               # Utilities, API client helpers\n\u2502   \u2514\u2500\u2500 styles/            # Global styles\n\u2514\u2500\u2500 __tests__/             # Unit / integration tests\n```\n\n## Commands (run from package root or via `pnpm --filter web`)\n| Command              | Description                       |\n|----------------------|-----------------------------------|\n| `pnpm dev`           | Start Next.js dev server          |\n| `pnpm build`         | Production build                  |\n| `pnpm lint`          | Run ESLint                        |\n| `pnpm typecheck`     | Run tsc --noEmit                  |\n| `pnpm test`          | Run Jest / Vitest                 |\n| `pnpm clean`         | Remove `.next`, `node_modules`    |\n\n## API Integration\n- API base URL configured via `NEXT_PUBLIC_API_URL` env var\n- All API calls go through `src/lib/api.ts` wrapper\n- Type-safe API client generated from OpenAPI spec (if available)\n\n## Conventions\n- Use `'use client'` only when necessary (default to Server Components)\n- Page components live in `src/app/` following Next.js file-based routing\n- Shared React components in `src/components/`, organized by domain\n- Environment variables prefixed with `NEXT_PUBLIC_` for client-side exposure\n",
+          "packages/api/AGENTS.md": "# packages/api \u2014 AGENTS.md\n\n## Purpose\nExpress REST API backend with Prisma ORM for data persistence.\n\n## Tech Stack\n- **Runtime:** Node.js\n- **Framework:** Express\n- **ORM:** Prisma\n- **Database:** PostgreSQL (local/dev) / SQLite (test)\n- **Language:** TypeScript\n- **Auth:** JWT (jsonwebtoken)\n- **Validation:** zod\n\n## Structure\n```\npackages/api/\n\u251c\u2500\u2500 package.json\n\u251c\u2500\u2500 tsconfig.json          # extends ../../tsconfig.base.json\n\u251c\u2500\u2500 prisma/\n\u2502   \u251c\u2500\u2500 schema.prisma      # data model\n\u2502   \u251c\u2500\u2500 migrations/        # DB migrations\n\u2502   \u2514\u2500\u2500 seed.ts            # seed script\n\u251c\u2500\u2500 src/\n\u2502   \u251c\u2500\u2500 index.ts           # entry point\n\u2502   \u251c\u2500\u2500 app.ts             # Express app setup (middleware, routes)\n\u2502   \u251c\u2500\u2500 routes/            # Route handlers (one file per resource)\n\u2502   \u251c\u2500\u2500 middleware/        # Auth, error handling, logging\n\u2502   \u251c\u2500\u2500 services/          # Business logic\n\u2502   \u251c\u2500\u2500 lib/               # Prisma client singleton, utilities\n\u2502   \u2514\u2500\u2500 types/             # Shared TS types\n\u2514\u2500\u2500 __tests__/             # Integration / unit tests\n```\n\n## Commands (run from package root or via `pnpm --filter api`)\n| Command               | Description                       |\n|-----------------------|-----------------------------------|\n| `pnpm dev`            | Start dev server with tsx watch   |\n| `pnpm build`          | Compile TS to JS                  |\n| `pnpm start`          | Start production server           |\n| `pnpm lint`           | Run ESLint                        |\n| `pnpm typecheck`      | Run tsc --noEmit                  |\n| `pnpm test`           | Run tests                         |\n| `pnpm db:migrate`     | Run Prisma migrations             |\n| `pnpm db:push`        | Push schema to DB (dev)           |\n| `pnpm db:seed`        | Run seed script                   |\n| `pnpm db:studio`      | Open Prisma Studio                |\n| `pnpm clean`          | Remove `dist`, `node_modules`     |\n\n## API Conventions\n- RESTful resource routes: `GET/POST/PUT/DELETE /api/v1/<resource>`\n- Request validation via zod schemas in middleware\n- Consistent error response shape: `{ error: { code, message, details? } }`\n- Prisma client is a singleton exported from `src/lib/prisma.ts`\n\n## Prisma Workflow\n1. Edit `prisma/schema.prisma`\n2. Run `pnpm db:migrate --name <description>` to create a migration\n3. Run `pnpm db:generate` to regenerate Prisma Client\n4. Run `pnpm db:seed` to apply seed data\n\n## Testing\n- Integration tests use a test PostgreSQL or SQLite DB\n- Test DB URL set via `DATABASE_URL` env var (`.env.test`)\n- Tests run against a fresh migration before each test suite\n"
+        },
+        "grading": {
+          "expectations": [
+            {
+              "text": "Root AGENTS.md describes the monorepo purpose and tooling",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 4: 'pnpm monorepo containing two packages: packages/web (Next.js frontend) and packages/api (Express + Prisma backend).' Lines 11-22 describe structure and conventions."
+            },
+            {
+              "text": "Root AGENTS.md specifies pnpm as the package manager",
+              "passed": true,
+              "evidence": "Root AGENTS.md line 7: 'Package manager: pnpm (workspace protocol workspace:*)' and lines 24-33 with pnpm commands."
+            },
+            {
+              "text": "At least packages/web/AGENTS.md and packages/api/AGENTS.md are created",
+              "passed": true,
+              "evidence": "Both packages/web/AGENTS.md and packages/api/AGENTS.md exist in outputs."
+            },
+            {
+              "text": "Root AGENTS.md does not include package-specific details",
+              "passed": true,
+              "evidence": "Root focuses on monorepo-wide concerns: workspace structure, shared commands, and top-level conventions. No Next.js or Express specifics."
+            }
+          ],
+          "summary": {
+            "passed": 4,
+            "failed": 0,
+            "total": 4,
+            "pass_rate": 1.0
+          },
+          "claims": [
+            {
+              "claim": "Created docs/ reference files",
+              "type": "factual",
+              "verified": true,
+              "evidence": "2 docs created: monorepo-overview.md, pnpm-workspace-setup.md"
+            }
+          ],
+          "eval_feedback": {
+            "suggestions": [
+              {
+                "reason": "Without the skill, the root AGENTS.md includes conventions inline (lines 35-40: 'Shared configs live at root', 'Package-level configs extend root configs') that could be moved to docs/. The skill version is more aggressive about keeping the root minimal."
+              }
+            ],
+            "overall": "Without the skill, the agent still creates a reasonable monorepo structure but includes more inline conventions in the root AGENTS.md rather than pushing them to docs/."
+          }
+        }
+      }
+    }
+  ],
+  "last_benchmark_run": 1
+}

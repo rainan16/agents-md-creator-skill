@@ -1,0 +1,78 @@
+{
+  "skill_name": "agents-md-creator",
+  "configurations": [
+    "with_skill",
+    "without_skill"
+  ],
+  "summary": {
+    "with_skill": {
+      "pass_rate": 1.0,
+      "pass_rate_std": 0.0,
+      "passed": 15,
+      "failed": 0,
+      "total": 15
+    },
+    "without_skill": {
+      "pass_rate": 0.7566666666666667,
+      "pass_rate_std": 0.21361959960016152,
+      "passed": 11,
+      "failed": 4,
+      "total": 15
+    }
+  },
+  "delta": {
+    "pass_rate": 0.2433333333333333,
+    "passed": 4,
+    "failed": -4
+  },
+  "evals": [
+    {
+      "id": "0",
+      "name": "eval-0-create-new-agents-md",
+      "with_skill": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "without_skill": {
+        "pass_rate": 0.67,
+        "passed": 4,
+        "failed": 2,
+        "total": 6
+      }
+    },
+    {
+      "id": "1",
+      "name": "eval-1-refactor-bloated-agents-md",
+      "with_skill": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5
+      },
+      "without_skill": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5
+      }
+    },
+    {
+      "id": "2",
+      "name": "eval-2-monorepo-agents-md-setup",
+      "with_skill": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4
+      },
+      "without_skill": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4
+      }
+    }
+  ]
+}
