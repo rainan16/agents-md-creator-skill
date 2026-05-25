@@ -482,6 +482,87 @@
           }
         }
       }
+    },
+    {
+      "id": 3,
+      "name": "python-project-non-js-stack",
+      "prompt": "I'm building a FastAPI service for processing medical images. We use Python 3.12, poetry for dependency management, pytest for testing, and ruff for linting. Can you create an AGENTS.md for it?",
+      "assertions": [
+        {
+          "name": "has-one-liner-description",
+          "description": "AGENTS.md contains a one-sentence project description",
+          "expected": true
+        },
+        {
+          "name": "specifies-poetry-not-npm",
+          "description": "AGENTS.md specifies poetry (or the correct Python package manager) — not npm or pnpm",
+          "expected": true
+        },
+        {
+          "name": "python-appropriate-commands",
+          "description": "Commands use Python tooling (pytest, ruff, poetry run, etc.) — not JavaScript equivalents",
+          "expected": true
+        },
+        {
+          "name": "no-typescript-reference-file",
+          "description": "No TYPESCRIPT.md or TypeScript-specific reference file is created",
+          "expected": true
+        },
+        {
+          "name": "under-20-lines",
+          "description": "Root AGENTS.md is under 20 lines",
+          "expected": false
+        },
+        {
+          "name": "has-reference-links",
+          "description": "AGENTS.md links to at least one docs/ reference file appropriate for a Python project",
+          "expected": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "refactor-with-contradictory-rules",
+      "prompt": "Can you refactor my AGENTS.md? It's gotten messy and I think there might be some conflicts:\n\n```\n# AGENTS.md\n\nThis is a React SPA with a Node.js backend.\n\nAlways add semicolons at the end of statements.\nPrettier handles all formatting automatically — never manually format code.\n\nUse Redux for all global state management.\nUse React Query for server state and Context API for UI state — avoid Redux.\n\nWe use Vitest for unit tests.\nWe use Jest for unit tests.\n\nDeploy to AWS via Terraform.\n```",
+      "assertions": [
+        {
+          "name": "contradictions-identified",
+          "description": "Skill explicitly identifies the contradictions (semicolons vs Prettier, Redux vs React Query/Context, Vitest vs Jest)",
+          "expected": false
+        },
+        {
+          "name": "asks-user-to-resolve",
+          "description": "Skill asks the user which version of each contradiction to keep rather than resolving automatically",
+          "expected": false
+        },
+        {
+          "name": "does-not-guess-resolution",
+          "description": "Skill does not silently pick one side of a contradiction and proceed without flagging it",
+          "expected": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "already-minimal-agents-md",
+      "prompt": "Can you take a look at my AGENTS.md and improve it if needed?\n\n```\n# Project\nThis is a Next.js SaaS app with a Stripe integration and a PostgreSQL database.\n\n## Commands\n- Package manager: pnpm\n- Dev: pnpm dev\n- Build: pnpm build\n- Test: pnpm test\n- Typecheck: pnpm typecheck\n\n## Reference\n- TypeScript conventions: docs/TYPESCRIPT.md\n- Testing patterns: docs/TESTING.md\n- API conventions: docs/API_CONVENTIONS.md\n```",
+      "assertions": [
+        {
+          "name": "does-not-bloat-root",
+          "description": "Skill does not add unnecessary content to the root AGENTS.md — it recognizes it is already minimal",
+          "expected": false
+        },
+        {
+          "name": "does-not-create-unnecessary-reference-files",
+          "description": "Skill does not create docs/ files for domains not present in the existing AGENTS.md without good reason",
+          "expected": false
+        },
+        {
+          "name": "validates-or-suggests-targeted-improvements",
+          "description": "Skill either confirms the file is good as-is or makes only targeted, justified improvements",
+          "expected": true
+        }
+      ]
     }
   ],
   "last_benchmark_run": 1

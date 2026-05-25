@@ -4,7 +4,7 @@ description: Create, refactor and optimize AGENTS.md files following progressive
 license: Apache-2.0
 metadata:
   author: rainan16
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # agents-md-creator
@@ -24,6 +24,7 @@ These principles guide every decision when creating or refactoring an AGENTS.md:
 - **Package manager**: Specify if not npm. Otherwise the agent may default to incorrect commands.
 - **Build/typecheck commands**: Only include if non-standard.
 - **Progressive disclosure**: Move domain-specific rules (TypeScript conventions, testing patterns, API design, Git workflow) to separate files referenced from the root AGENTS.md. Those rules only load when the agent needs that domain.
+- **Prefer pointers to copies**: In reference files, use `file:line` references (e.g., `src/utils/api.ts:45`) to point at canonical examples in the actual codebase rather than inlining code snippets. Snippets go stale; file references stay accurate.
 - **Document capabilities, not file paths**: File paths change. Describe what the project does and where things might be. Domain concepts (e.g., "organization" vs "group" vs "workspace") are more stable than paths — prefer those.
 - **Stale docs poison context**: Keep everything minimal and avoid documenting file system structure.
 
@@ -33,12 +34,13 @@ When the user asks you to create/set up an AGENTS.md for their project:
 
 ### Step 1: Analyze the project
 
-First, explore the project to understand:
-- What does the project do? (read package.json, README, configs, etc.)
-- What package manager is used? (check for pnpm-lock.yaml, yarn.lock, bun.lock, package-lock.json)
-- What are the build, test, and typecheck commands? (check package.json scripts)
-- What tech stack and frameworks are used? (React, Node, Python, Go, etc.)
-- Is this a monorepo? (check for workspaces config, multiple packages/)
+Explore the project through the WHY / WHAT / HOW lens:
+
+- **WHY**: What is this project and what problem does it solve? (read README, package.json description, main entry point)
+- **WHAT**: Tech stack and frameworks (React, Node, Go, etc.), project structure, is it a monorepo? (check for workspaces config, multiple packages/)
+- **HOW**: Package manager (check for pnpm-lock.yaml, yarn.lock, bun.lock, package-lock.json), build/test/typecheck commands (check package.json scripts or Makefile)
+
+These map directly to what the root AGENTS.md should communicate: the one-liner (WHY), any structural context the agent needs (WHAT), and commands (HOW).
 
 ### Step 2: Write the root AGENTS.md
 
@@ -85,6 +87,7 @@ For each category:
 1. Scan existing code to extract actual conventions being followed
 2. Look at existing config files, lint rules, and patterns in the codebase
 3. Write the reference file with clear, actionable guidance specific to this project
+4. For concrete examples, use `file:line` references (e.g., `src/utils/api.ts:45`) to point at the codebase rather than inlining code snippets that will go stale
 
 Each reference file should be self-contained and follow the same progressive disclosure pattern — it can reference other docs/ files if needed:
 
@@ -140,10 +143,20 @@ Create the replacement root AGENTS.md with only:
 
 ### Step 5: Flag for deletion
 
-Present the user with a list of instructions you recommend deleting:
-- Redundant (agent already knows it)
-- Too vague to be actionable (e.g., "write clean code")
-- Overly obvious
+This is one of the most valuable steps of the refactor — do not skip it. Present the user with a clearly formatted list of every instruction you recommend removing and why, for example:
+
+| Instruction | Reason |
+|---|---|
+| "Always use const instead of let" | Redundant — agents default to `const` |
+| "Never use var" | Redundant — `var` is universally avoided in modern JS/TS |
+| "Write clean, maintainable code" | Too vague — not actionable |
+| Hardcoded file paths | Stale — converted to capability descriptions in reference files |
+
+Categories to flag:
+- **Redundant**: Things the agent already knows ("use const", "write descriptive variable names", "handle errors")
+- **Vague**: Not actionable ("write clean code", "keep things maintainable", "follow best practices")
+- **Style/formatting rules**: Belongs in linter config, not AGENTS.md — agents are in-context learners that follow existing code patterns without being told
+- **Stale paths**: Hardcoded file paths that describe structure rather than capabilities
 
 ### Step 6: Validate
 

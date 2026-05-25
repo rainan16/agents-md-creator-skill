@@ -1,78 +1,319 @@
 {
-  "skill_name": "agents-md-creator",
-  "configurations": [
-    "with_skill",
-    "without_skill"
-  ],
-  "summary": {
-    "with_skill": {
-      "pass_rate": 1.0,
-      "pass_rate_std": 0.0,
-      "passed": 15,
-      "failed": 0,
-      "total": 15
-    },
-    "without_skill": {
-      "pass_rate": 0.7566666666666667,
-      "pass_rate_std": 0.21361959960016152,
-      "passed": 11,
-      "failed": 4,
-      "total": 15
-    }
+  "metadata": {
+    "skill_name": "agents-md-creator",
+    "skill_path": ".agents/skills/agents-md-creator",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-sonnet-4-6",
+    "timestamp": "2026-05-25T16:21:02Z",
+    "evals_run": [0, 1, 2, 3, 4, 5],
+    "runs_per_configuration": 1
   },
-  "delta": {
-    "pass_rate": 0.2433333333333333,
-    "passed": 4,
-    "failed": -4
-  },
-  "evals": [
+  "runs": [
     {
-      "id": "0",
-      "name": "eval-0-create-new-agents-md",
-      "with_skill": {
+      "eval_id": 0,
+      "eval_name": "create-new-agents-md",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
         "pass_rate": 1.0,
         "passed": 6,
         "failed": 0,
-        "total": 6
+        "total": 6,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
       },
-      "without_skill": {
-        "pass_rate": 0.67,
-        "passed": 4,
-        "failed": 2,
-        "total": 6
-      }
+      "expectations": [
+        {"text": "AGENTS.md contains a one-sentence project description", "passed": true, "evidence": "Root AGENTS.md line 2: 'This is a Go CLI tool that converts Markdown files to PDF documents.' — a single, clear one-liner."},
+        {"text": "AGENTS.md specifies Go modules as the dependency manager", "passed": true, "evidence": "Root AGENTS.md line 8: 'Package manager: Go modules'"},
+        {"text": "AGENTS.md includes the Make build command", "passed": true, "evidence": "Root AGENTS.md line 5: 'Build: make build'"},
+        {"text": "AGENTS.md links to at least one docs/ reference file", "passed": true, "evidence": "Root AGENTS.md lines 11-14: links to docs/GOLANG.md, docs/BUILD.md, docs/TESTING.md, docs/ARCHITECTURE.md"},
+        {"text": "Root AGENTS.md is under 20 lines (minimal)", "passed": true, "evidence": "Root AGENTS.md is 14 lines total"},
+        {"text": "AGENTS.md does not contain hardcoded file paths like src/ or internal/", "passed": true, "evidence": "No file paths like src/ or internal/ appear in the root AGENTS.md. Packages are described by responsibility."}
+      ],
+      "notes": []
     },
     {
-      "id": "1",
-      "name": "eval-1-refactor-bloated-agents-md",
-      "with_skill": {
+      "eval_id": 0,
+      "eval_name": "create-new-agents-md",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "AGENTS.md contains a one-sentence project description", "passed": true, "evidence": "Lines 5-6: 'A Go CLI tool that converts Markdown files to PDF. Uses go modules for dependency management and make for building.'"},
+        {"text": "AGENTS.md specifies Go modules as the dependency manager", "passed": true, "evidence": "Line 6 mentions 'go modules for dependency management' and line 11: 'Dependencies: Go modules (go.mod / go.sum)'"},
+        {"text": "AGENTS.md includes the Make build command", "passed": true, "evidence": "Line 46: 'make build' in the Common Commands table"},
+        {"text": "AGENTS.md links to at least one docs/ reference file", "passed": true, "evidence": "Lines 37-38 reference docs/architecture.md and docs/development.md in the Project Structure tree"},
+        {"text": "Root AGENTS.md is under 20 lines (minimal)", "passed": false, "evidence": "Root AGENTS.md is 109 lines — far exceeds the 20-line limit for a minimal file"},
+        {"text": "AGENTS.md does not contain hardcoded file paths like src/ or internal/", "passed": false, "evidence": "Lines 25-35 contain hardcoded paths: main.go, cmd/root.go, internal/convert/convert.go, internal/render/render.go, internal/config/config.go, etc."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "refactor-bloated-agents-md",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
         "pass_rate": 1.0,
         "passed": 5,
         "failed": 0,
-        "total": 5
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
       },
-      "without_skill": {
+      "expectations": [
+        {"text": "Root AGENTS.md has only essentials (description, commands, links to references)", "passed": true, "evidence": "Root AGENTS.md is 17 lines: one-line project description, package manager, test command, and 6 links to reference files. No domain-specific rules."},
+        {"text": "'Write clean, maintainable code' or equivalent vague instructions are removed", "passed": true, "evidence": "Summary explicitly flags 'Write clean, maintainable code' for deletion as 'Too vague — not actionable for an agent'"},
+        {"text": "Created a docs/ folder with at least 3 reference files (TYPESCRIPT, TESTING, GIT, DOCKER, etc.)", "passed": true, "evidence": "6 docs created: TYPESCRIPT.md, TESTING.md, GIT.md, DOCKER.md, CI_CD.md, ARCHITECTURE.md"},
+        {"text": "No hardcoded file paths (like src/auth/handlers.ts) remain in root AGENTS.md", "passed": true, "evidence": "Root AGENTS.md contains no hardcoded paths. Summary shows hardcoded paths were converted to capability descriptions in docs/ARCHITECTURE.md"},
+        {"text": "User is presented with a list of flagged/removed instructions", "passed": true, "evidence": "Summary 'What was flagged for deletion' section lists 4 items with reasons: const/let redundancy, var avoidance, 'write clean code' vagueness, stale file paths"}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "refactor-bloated-agents-md",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
         "pass_rate": 0.6,
         "passed": 3,
         "failed": 2,
-        "total": 5
-      }
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Root AGENTS.md has only essentials (description, commands, links to references)", "passed": true, "evidence": "Root AGENTS.md is 14 lines: project description and a reference table. Reasonably minimal."},
+        {"text": "'Write clean, maintainable code' or equivalent vague instructions are removed", "passed": false, "evidence": "Summary explicitly states: 'No content was removed; all original instructions are preserved across the new files.' Vague instructions like 'write clean code' were NOT flagged for removal."},
+        {"text": "Created a docs/ folder with at least 3 reference files (TYPESCRIPT, TESTING, GIT, DOCKER, etc.)", "passed": true, "evidence": "5 docs created: coding-standards.md, testing.md, git-workflow.md, deployment.md, project-map.md"},
+        {"text": "No hardcoded file paths (like src/auth/handlers.ts) remain in root AGENTS.md", "passed": true, "evidence": "Root AGENTS.md has no hardcoded paths — they were moved to docs/project-map.md"},
+        {"text": "User is presented with a list of flagged/removed instructions", "passed": false, "evidence": "Summary says no content was removed: 'No content was removed; all original instructions are preserved'"}
+      ],
+      "notes": []
     },
     {
-      "id": "2",
-      "name": "eval-2-monorepo-agents-md-setup",
-      "with_skill": {
+      "eval_id": 2,
+      "eval_name": "monorepo-agents-md-setup",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
         "pass_rate": 1.0,
         "passed": 4,
         "failed": 0,
-        "total": 4
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
       },
-      "without_skill": {
+      "expectations": [
+        {"text": "Root AGENTS.md describes the monorepo purpose and tooling", "passed": true, "evidence": "Root AGENTS.md line 3: 'This is a pnpm monorepo containing a Next.js web frontend and an Express + Prisma API backend.' Lines 7-10 specify pnpm commands."},
+        {"text": "Root AGENTS.md specifies pnpm as the package manager", "passed": true, "evidence": "Root AGENTS.md line 8: 'Package manager: pnpm'"},
+        {"text": "At least packages/web/AGENTS.md and packages/api/AGENTS.md are created", "passed": true, "evidence": "Both packages/web/AGENTS.md and packages/api/AGENTS.md exist in outputs. Root AGENTS.md lines 16-17 reference them."},
+        {"text": "Root AGENTS.md does not include package-specific details", "passed": true, "evidence": "Root AGENTS.md is 19 lines: project description, 4 commands, and reference links. No Next.js or Express/Prisma specifics."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "monorepo-agents-md-setup",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
         "pass_rate": 1.0,
         "passed": 4,
         "failed": 0,
-        "total": 4
-      }
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Root AGENTS.md describes the monorepo purpose and tooling", "passed": true, "evidence": "Root AGENTS.md line 4: 'pnpm monorepo containing two packages: packages/web (Next.js frontend) and packages/api (Express + Prisma backend).' Lines 11-22 describe structure and conventions."},
+        {"text": "Root AGENTS.md specifies pnpm as the package manager", "passed": true, "evidence": "Root AGENTS.md line 7: 'Package manager: pnpm (workspace protocol workspace:*)' and lines 24-33 with pnpm commands."},
+        {"text": "At least packages/web/AGENTS.md and packages/api/AGENTS.md are created", "passed": true, "evidence": "Both packages/web/AGENTS.md and packages/api/AGENTS.md exist in outputs."},
+        {"text": "Root AGENTS.md does not include package-specific details", "passed": true, "evidence": "Root focuses on monorepo-wide concerns: workspace structure, shared commands, and top-level conventions. No Next.js or Express specifics."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "python-project-non-js-stack",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 69.4,
+        "tokens": 15166,
+        "tool_calls": 10,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "AGENTS.md contains a one-sentence project description", "passed": true, "evidence": "Line 3: 'This is a FastAPI service for processing and analyzing medical images.' — clean single-sentence one-liner."},
+        {"text": "AGENTS.md specifies poetry (not npm or pnpm) as the package manager", "passed": true, "evidence": "Line 7: 'Package manager: poetry' — explicitly named, no npm/pnpm present."},
+        {"text": "Commands use Python tooling (pytest, ruff, poetry run) — not JavaScript equivalents", "passed": true, "evidence": "Lines 8-11: 'poetry install', 'poetry run pytest', 'poetry run ruff check .', 'poetry run ruff format .' — all Python/poetry-based commands."},
+        {"text": "No TYPESCRIPT.md or TypeScript-specific reference file is created", "passed": true, "evidence": "Reference files created: TESTING.md, API_CONVENTIONS.md, FRAMEWORK_GUIDE.md — no TypeScript file present."},
+        {"text": "Root AGENTS.md is under 20 lines", "passed": true, "evidence": "Root AGENTS.md is 17 lines total."},
+        {"text": "AGENTS.md links to at least one docs/ reference file appropriate for a Python project", "passed": true, "evidence": "Lines 15-17: links to docs/TESTING.md, docs/API_CONVENTIONS.md, docs/FRAMEWORK_GUIDE.md — all Python/FastAPI-relevant."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "python-project-non-js-stack",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 33.5,
+        "tokens": 9573,
+        "tool_calls": 3,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "AGENTS.md contains a one-sentence project description", "passed": true, "evidence": "Project Overview section contains: 'FastAPI service for processing medical images.' as the first sentence — functions as a project description."},
+        {"text": "AGENTS.md specifies poetry (not npm or pnpm) as the package manager", "passed": true, "evidence": "Commands section uses 'poetry install' and 'poetry run ...' throughout — poetry is clearly the package manager."},
+        {"text": "Commands use Python tooling (pytest, ruff, poetry run) — not JavaScript equivalents", "passed": true, "evidence": "All commands use poetry run pytest, poetry run ruff check, poetry run ruff format — no npm/pnpm commands."},
+        {"text": "No TYPESCRIPT.md or TypeScript-specific reference file is created", "passed": true, "evidence": "No docs/ reference files were created at all — entire content is in a single AGENTS.md with no TypeScript references."},
+        {"text": "Root AGENTS.md is under 20 lines", "passed": false, "evidence": "Root AGENTS.md is 73 lines — includes inline Architecture tree, Development Guidelines, Testing, Code Quality, and Security sections. Far exceeds 20-line limit."},
+        {"text": "AGENTS.md links to at least one docs/ reference file appropriate for a Python project", "passed": false, "evidence": "No docs/ reference files created and no links to any reference files in the AGENTS.md. All content is inlined."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "eval_name": "refactor-with-contradictory-rules",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 83.6,
+        "tokens": 15946,
+        "tool_calls": 10,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Skill explicitly identifies the contradictions (semicolons vs Prettier, Redux vs React Query/Context, Vitest vs Jest)", "passed": true, "evidence": "AGENTS.md ACTION REQUIRED block lists all 3 contradictions explicitly. Reference files mark each conflict with [RESOLVE]."},
+        {"text": "Skill asks the user which version of each contradiction to keep rather than resolving automatically", "passed": true, "evidence": "AGENTS.md says 'Open each file, pick one option, and delete the other before committing.' User must make the decision."},
+        {"text": "Skill does not silently pick one side of a contradiction and proceed without flagging it", "passed": true, "evidence": "All 3 contradictions remain as unresolved [RESOLVE] markers. Both sides of each contradiction are preserved for the user to choose."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "eval_name": "refactor-with-contradictory-rules",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 3,
+        "total": 3,
+        "time_seconds": 27.3,
+        "tokens": 9389,
+        "tool_calls": 3,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Skill explicitly identifies the contradictions (semicolons vs Prettier, Redux vs React Query/Context, Vitest vs Jest)", "passed": false, "evidence": "Output AGENTS.md shows resolved rules with no mention of contradictions. Contradictions were identified internally but not surfaced in the output."},
+        {"text": "Skill asks the user which version of each contradiction to keep rather than resolving automatically", "passed": false, "evidence": "All three contradictions were silently resolved: Prettier kept over semicolons, React Query+Context kept over Redux, Vitest kept over Jest. No choice presented to user."},
+        {"text": "Skill does not silently pick one side of a contradiction and proceed without flagging it", "passed": false, "evidence": "All three contradictions were silently resolved. Output AGENTS.md presents one authoritative rule for each with no indication competing rules existed."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 5,
+      "eval_name": "already-minimal-agents-md",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 53.7,
+        "tokens": 14329,
+        "tool_calls": 6,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Skill does not add unnecessary content to the root AGENTS.md — it recognizes it is already minimal", "passed": true, "evidence": "Output AGENTS.md is 16 lines — only one line added ('- Database conventions: docs/DATABASE.md'). Root remains minimal; no new sections or inline content added."},
+        {"text": "Skill does not create docs/ files for domains not present in the existing AGENTS.md without good reason", "passed": true, "evidence": "No new docs/ reference files were created — only a reference link was added. The change is scoped to adding a pointer."},
+        {"text": "Skill either confirms the file is good as-is or makes only targeted, justified improvements", "passed": true, "evidence": "Single improvement (adding docs/DATABASE.md reference) is justified: PostgreSQL named in project description but had no corresponding reference file."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 5,
+      "eval_name": "already-minimal-agents-md",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.3333,
+        "passed": 1,
+        "failed": 2,
+        "total": 3,
+        "time_seconds": 47.6,
+        "tokens": 10304,
+        "tool_calls": 5,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Skill does not add unnecessary content to the root AGENTS.md — it recognizes it is already minimal", "passed": false, "evidence": "Output AGENTS.md is 48 lines vs original ~14 lines. Added Stack section, reformatted commands as table, added Architecture Notes with hardcoded paths (app/api/, app/api/webhooks/stripe/), env var template, Testing reminder."},
+        {"text": "Skill does not create docs/ files for domains not present in the existing AGENTS.md without good reason", "passed": true, "evidence": "No new docs/ reference files were created. Content was added inline to the root rather than separate files."},
+        {"text": "Skill either confirms the file is good as-is or makes only targeted, justified improvements", "passed": false, "evidence": "Extensive untargeted changes: full Stack section, reformatted commands, hardcoded file paths, env var template block. Introduces exactly the kind of bloat progressive disclosure aims to avoid."}
+      ],
+      "notes": []
     }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 34.45, "stddev": 38.91, "min": 0.0, "max": 83.6},
+      "tokens": {"mean": 9240.0, "stddev": 7520.0, "min": 0, "max": 15946}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.5444, "stddev": 0.341, "min": 0.0, "max": 1.0},
+      "time_seconds": {"mean": 18.07, "stddev": 20.86, "min": 0.0, "max": 47.6},
+      "tokens": {"mean": 4878.0, "stddev": 5112.0, "min": 0, "max": 10304}
+    },
+    "delta": {
+      "pass_rate": "+0.46",
+      "time_seconds": "+16.4",
+      "tokens": "+4362"
+    }
+  },
+  "notes": [
+    "Eval 2 (monorepo-agents-md-setup) is non-discriminating: both with_skill and without_skill pass all 4 assertions. The assertions only test structural requirements (pnpm, package-level AGENTS.md files, no package-specific content in root) that any capable model satisfies. Consider adding assertions about root file minimalism or cross-package reference file depth.",
+    "Eval 4 (refactor-with-contradictory-rules) is the strongest discriminator: 100% vs 0%. Without the skill, models confidently resolve contradictions autonomously; with the skill they correctly surface choices to the user. This is the clearest value-add.",
+    "Evals 3 and 0 share the same failure pattern for without_skill: stack-specific flags pass but minimalism fails. The model knows the tools but defaults to comprehensive inline documentation rather than progressive disclosure.",
+    "The skill shows zero variance (stddev=0.0) across all evals, while the baseline shows high variance (stddev=0.341). This suggests the skill reliably enforces consistent structural discipline regardless of project type.",
+    "Timing data only available for evals 3-5 (new runs). Evals 0-2 used pre-existing grading results from evals.json and have time_seconds=0. For a more complete timing picture, re-run evals 0-2 as live subagent runs."
   ]
 }
